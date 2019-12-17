@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Appointment Scheduler </title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+       
+    <script>
+    $(document).ready(function(){
+        $.ajax({
+            method: "GET",
+            url: "/appointments",
+            dataType: "json",
+            success: function(result,status) {
+              
+              
+            }
+    
+        });//ajax
+        
+        
+    
+    });
+    </script>
+    <style>
+        .headerstuff {
+            font-size:1.2em;
+            font-family:Impact, Charcoal, sans-serif;
+        }
+        
+        body {
+            padding:20px;
+        }
+        
+        .datax {
+            display:inline-block;
+            width:250px;
+        }
+        
+        .pageButton {
+            width:150px;
+        }
+        
+    </style>
+    
+    </head>
+    <body>
+        
+        <div class="jumbotron text-center">
+        <h1>Dashboard</h1>
+        </div>
+        <br><br>
+        <span class="headerstuff" style="display:inline-block; width:250px;">Date</span> <span class="headerstuff" style="display:inline-block; width:250px;">Start Time</span> <span class="headerstuff" style="display:inline-block; width:250px;">Duration</span> <span class="headerstuff" style="display:inline-block; width:350px;">Booked By</span>
+        <button id="newButton" type="button" class="btn btn-secondary" >Add New Appoint Window</button> &nbsp; <button id="logoutButton" type="button" class="btn btn-warning">Logout</button>
+        <hr>
+        <div id="infoArea"></div>
+        <% appoints.forEach( function(record){ %> 
+            
+            <span id="datespot" class="datax"><%=record.date%></span>
+            <% if(record.start_min == 0){ %>
+            <span class="datax"><%= record.start_hour %>:00 &nbsp; <%= record.tod %></span>
+            <% } else{ %>  
+            <span class="datax"><%= record.start_hour %>:<%= record.start_min %> &nbsp; <%= record.tod %></span>
+            <% } %>
+            <% if(record.duration_min > 0){ %>
+            <span class="datax"><%= record.duration_hour %>:<%= record.duration_min %>&nbsp;hour(s)</span>
+            <% } else{ %>  
+            <span class="datax"><%= record.duration_hour %>&nbsp;hour(s)</span>
+            <% } %>
+            <% if(record.booked_by == "N/A"){ %>
+            <span class="datax">Not Booked</span>
+            <% } else{ %>  
+            <span class="datax"><%= record.booked_by %></span>
+            <% } %>
+            
+            <span style="display:inline-block; width:100px;"></span>
+            
+            <button id=<%=record.ap_id%> type="button" class="btn btn-primary pageButton detailAppButton" >Details</button>
+            &nbsp;
+            <button id=<%=record.ap_id%> type="button" class="btn btn-danger pageButton deleteAppButton" >Delete</button>
+            
+            <br><br>
+        <% })  %>
+        
+
+<!-- Modal -->
+<div class="modal fade" id="dashboardModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel"><h1 id="modalTitle">Add Time Slot</h1></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        
+         <div>
+            
+            <h1 id="insideTitle"></h1>
+            <p id="modalBody">
+                <input id="inputDate" type="date"><br><br>
+                Start Time: <input min="0" max="99" id="start_hour" type="number"> &nbsp; <input min="0" max="99" id="start_min" type="number"><br><br>
+                End Time: <input min="0" max="99" id="end_hour" type="number"> &nbsp; <input type="number" min="0" max="99" id="end_minu"> <br><br>
+                <select id="timeofday">
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                </select>
+            </p>
+            
+            
+        </div>
+        
+        
+      </div>
+      <div class="modal-footer">
+        <button id="modalConfirm" type="button" class="btn btn-primary">Add</button> 
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel"><h1 id="modalTitle">Deleting Time Slot</h1></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        
+         <div>
+            
+            <h1 id="insideTitle"></h1>
+            <p id="deletemodalBody">
+                Start Time: &nbsp; <span id="dstart_time"></span> <br><br>
+                End Time: &nbsp; <span id="dend_time"></span>
+                <br><br>
+                Are you sure you want to delete this? <br> This cannot be undone.
+            </p>
+            
+            
+        </div>
+        
+        
+      </div>
+      <div class="modal-footer">
+        <button id="modalDeleteConfirm" type="button" class="btn btn-danger">Delete</button> 
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    <script>
+        let hack;
+        $("#newButton").on("click",function() {
+           $("#dashboardModal").modal("show");
+        });
+        
+        $("#logoutButton").on("click", function() {
+           window.location.href = "/logout"; 
+        });
+        
+        
+        $(".deleteAppButton").on("click",function(){
+            hack = this.id;
+            $.ajax({
+                    type: "GET",
+                    url: "/getAppointment",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: {"ap_id":this.id},
+                    success: function(result, status) {
+                        //console.log(result);
+                        if(result.start_min < 10) {
+                            $("#dstart_time").html(result.date + " At " +  result.start_hour + ":" + "0" + result.start_min + " " + result.tod);
+                        }
+                        else if(result.start_min == 0) {
+                            $("#dstart_time").html(result.date + " At " +  result.start_hour + ":" + result.start_min + "0" + " " + result.tod);
+                        }
+                        else {
+                            $("#dstart_time").html(result.date + " At " +  result.start_hour + ":" + result.start_min + " " + result.tod);
+                        }
+                        
+                        if(result.end_min < 10) {
+                            $("#dend_time").html(result.date + " Until " + result.end_hour + ":" + "0" + result.end_min + " " + result.tod);
+                        }
+                        else if(result.end_min == 0) {
+                            $("#dend_time").html(result.date + " Until " + result.end_hour + ":" + result.end_min + "0" + " " + result.tod);
+                        } 
+                        else {
+                            $("#dend_time").html(result.date + " Until " + result.end_hour + ":" + result.end_min + " " +result.tod);
+                        }
+                        
+                        $("#deleteModal").modal("show");
+                    }
+                }); //ajax 
+        });
+        
+        
+        $("#modalDeleteConfirm").on("click",function() {
+            $.ajax({
+                    type: "POST",
+                    url: "/deleteTime",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        "ap_id": hack
+                    }),
+                    success: function(result, status) {
+                        if(result.successful) {
+                            window.location.href="/dashboard";
+                        }
+                    }
+                }); //ajax
+            
+        });
+        
+        $("#modalConfirm").on("click", function() {
+           let durhour = $("#end_hour").val() - $("#start_hour").val()
+           let durmin;
+           let endmin = parseInt($("#end_minu").val())
+           let starthour = parseInt($("#start_hour").val());
+           let startmin = parseInt($("#start_min").val());
+           let endhour = parseInt($("#end_hour").val());
+           console.log(starthour)
+           console.log(startmin)
+           console.log(endhour)
+           if(endmin < $("#start_min").val()) {
+               durmin = (60 - $("#start_min").val()) + endmin
+               durhour = durhour - 1
+           } else{
+               durmin = endmin - $("#start_min").val();
+           }
+          $.ajax({
+                    type: "POST",
+                    url: "/addTime",
+                    dataType: "json",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        "date": $("#inputDate").val(),
+                        "start_hour": starthour,
+                        "start_min": startmin,
+                        "tod": $("#timeofday").val(),
+                        "duration_hour":durhour,
+                        "duration_min":durmin,
+                        "end_hour":endhour,
+                        "end_min":endmin,
+                        "booked_by":"N/A",
+                    }),
+                    success: function(result, status) {
+                        if(result.successful) {
+                            window.location.href="/dashboard";
+                        }
+                    }
+                }); //ajax
+        });
+        
+        
+    </script>
+    <br><br><br><br><br><br>
+    Rubric:
+    <table>
+    <thead>
+    <tr>
+    <th style="text-align:left">#</th>
+    <th style="text-align:left">Task Description</th>
+    <th style="text-align:left">Points</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <td style="text-align:left">1</td>
+    <td style="text-align:left; color:green">You provide a ERD diagram representing the data and its relationships. This may be included in Cloud9 as a picture or from a designer tool</td>
+    <td style="text-align:left">10</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">2</td>
+    <td style="text-align:left; color:green">Tables in MySQL match the ERD and support the requirements of the application</td>
+    <td style="text-align:left">20</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">3</td>
+    <td style="text-align:left; color:green">The list of available appointments is pulled from MySQL using the API endpoint and displayed using the specified page design</td>
+    <td style="text-align:left">20</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">4</td>
+    <td style="text-align:left; color:red">Available times with dates in the past do not show up in the Dashboard list</td>
+    <td style="text-align:left">0</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">5</td>
+    <td style="text-align:left; color:green">A user can add an available time slot to the MySQL using the API endpoint and displayed using the specified modal design</td>
+    <td style="text-align:left">20</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">6</td>
+    <td style="text-align:left; color:green">A user can remove an available time slot from MySQL using the API endpoint</td>
+    <td style="text-align:left">15</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">7</td>
+    <td style="text-align:left; color:green">The user confirms the removal using the specified modal design</td>
+    <td style="text-align:left">10</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">8</td>
+    <td style="text-align:left; color:green">This rubric is properly included AND UPDATED (BONUS)</td>
+    <td style="text-align:left">2</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">BD</td>
+    <td style="text-align:left; color:olive">Login works with a User table and BCrypt</td>
+    <td style="text-align:left"></td>
+    </tr>
+    <tr>
+    <td style="text-align:left">BD</td>
+    <td style="text-align:left; color:red">Add Google Signin for app login</td>
+    <td style="text-align:left">0</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">BD</td>
+    <td style="text-align:left; color:green">The app is deployed to Heroku</td>
+    <td style="text-align:left">5</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">BD</td>
+    <td style="text-align:left; color:red">A banner file can be uploaded and displayed</td>
+    <td style="text-align:left">0</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">BD</td>
+    <td style="text-align:left; color:red">The user can add multiple available time slots as specified</td>
+    <td style="text-align:left">0</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">BD</td>
+    <td style="text-align:left; color:red">In a separate page, you show the correct list of available time slots to the user who navigates to the correct invitation URL</td>
+    <td style="text-align:left">0</td>
+    </tr>
+    <tr>
+    <td style="text-align:left">BD</td>
+    <td style="text-align:left; color:red">You correctly implement booking of the appointement, including all side effects</td>
+    <td style="text-align:left">0</td>
+    </tr>
+     <tr>
+    <td style="text-align:left"></td>
+    <td style="text-align:left">TOTAL</td>
+    <td style="text-align:left">102</td>
+    </tr>
+    </tbody>
+    </table>
+</html>
